@@ -44,8 +44,12 @@ class AhpController extends Controller
                 $val = $comp ? (float) $comp->comparison_value : 1.0;
 
                 // Determine scale direction for UI (1-9 scale toward left or right)
+                // Clamp val to a safe range to avoid INF/NAN in JS x-data
+                $val = max(1.0 / 9.0, min(9.0, $val > 0 ? $val : 1.0));
                 $direction = ($val >= 1.0) ? 'left' : 'right';
-                $scaleValue = ($val >= 1.0) ? round($val, 2) : round(1.0 / $val, 2);
+                // Always produce a clean integer 1-9 so x-model matches <select> option values exactly
+                $rawScale = ($val >= 1.0) ? $val : (1.0 / $val);
+                $scaleValue = max(1, min(9, (int) round($rawScale)));
 
                 $pairs[] = [
                     'key' => $key,
